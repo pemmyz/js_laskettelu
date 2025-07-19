@@ -86,10 +86,29 @@ button:hover {
     width: calc(100% - 20px);
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
     font-size: 1em;
     color: #1a237e;
     text-shadow: 1px 1px 0 #fff;
+    pointer-events: none; /* Make HUD unclickable */
 }
+
+#left-hud, #right-hud {
+    flex-basis: 33%;
+}
+
+#right-hud {
+    text-align: right;
+}
+
+#mode-indicator {
+    flex-basis: 33%;
+    text-align: center;
+    color: #ffcc00; /* Yellow */
+    text-shadow: 2px 2px 0px #e64a19; /* Red-orange shadow */
+    font-weight: bold;
+}
+
 
 /* Modal Styles */
 .modal {

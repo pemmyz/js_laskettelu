@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkiFree Endless Runner</title>
+    <title>JS-Laskettelu (SkiFree Clone)</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
@@ -14,8 +14,8 @@
 
         <!-- UI Overlays -->
         <div id="start-menu" class="overlay">
-            <h1>SkiFree Endless</h1>
-            <p>Use ◀ and ▶ arrow keys to steer.</p>
+            <h1>JS-Laskettelu</h1>
+            <p>◀/▶: Steer | ▼: Straight | B: Autobot | D: Dev Mode</p>
             <p>Dodge trees and rocks. Hit moguls for points!</p>
             <button id="start-button">Start Game</button>
             <div class="menu-options">
@@ -37,9 +37,14 @@
         
         <!-- In-Game UI -->
         <div id="hud" style="display: none;">
-            <div id="score-display">Score: 0</div>
-            <div id="distance-display">Distance: 0m</div>
-            <div id="high-score-display">High Score: 0</div>
+            <div id="left-hud">
+                <div id="score-display">Score: 0</div>
+                <div id="distance-display">Distance: 0m</div>
+            </div>
+            <div id="mode-indicator"></div>
+            <div id="right-hud">
+                <div id="high-score-display">High Score: 0</div>
+            </div>
         </div>
 
         <!-- Modals -->
@@ -54,7 +59,7 @@
         <div id="customize-modal" class="modal" style="display: none;">
             <div class="modal-content">
                 <span class="close-button">×</span>
-                <h2>Choose Your Skier</h2>
+                <h2>Choose Your Character</h2>
                 <div id="skier-options">
                     <!-- Options will be populated by JavaScript -->
                 </div>
