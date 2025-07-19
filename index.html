@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkiFree Endless Runner</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+        <!-- UI Overlays -->
+        <div id="start-menu" class="overlay">
+            <h1>SkiFree Endless</h1>
+            <p>Use ◀ and ▶ arrow keys to steer.</p>
+            <p>Dodge trees and rocks. Hit moguls for points!</p>
+            <button id="start-button">Start Game</button>
+            <div class="menu-options">
+                <button id="customize-button">Customize</button>
+                <button id="leaderboard-button">Leaderboard</button>
+            </div>
+        </div>
+
+        <div id="game-over-menu" class="overlay" style="display: none;">
+            <h1>Game Over</h1>
+            <p>The Yeti got you!</p>
+            <p>Your Score: <span id="final-score">0</span></p>
+            <p>High Score: <span id="final-high-score">0</span></p>
+            <button id="retry-button">Try Again</button>
+            <div class="menu-options">
+                 <button id="main-menu-button">Main Menu</button>
+            </div>
+        </div>
+        
+        <!-- In-Game UI -->
+        <div id="hud" style="display: none;">
+            <div id="score-display">Score: 0</div>
+            <div id="distance-display">Distance: 0m</div>
+            <div id="high-score-display">High Score: 0</div>
+        </div>
+
+        <!-- Modals -->
+        <div id="leaderboard-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close-button">×</span>
+                <h2>Leaderboard</h2>
+                <ol id="leaderboard-list"></ol>
+            </div>
+        </div>
+
+        <div id="customize-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close-button">×</span>
+                <h2>Choose Your Skier</h2>
+                <div id="skier-options">
+                    <!-- Options will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
