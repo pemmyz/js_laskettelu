@@ -36,11 +36,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const YETI_CHAR = '👹';
 
-    const PLAYER_SPEED_X = 5;
-    const GAME_INITIAL_SPEED_Y = 3;
+    const PLAYER_SPEED_X = 4; // Adjusted for diagonal feel
+    const GAME_INITIAL_SPEED_Y = 4; // Adjusted for diagonal feel
     const GAME_SPEED_INCREMENT = 0.0005;
     const YETI_TRIGGER_DISTANCE = 2000;
-    const YETI_SPEED_MULTIPLIER = 1.05; // Yeti is slightly faster than the world
+    const YETI_SPEED_MULTIPLIER = 1.05;
 
     // --- Game State ---
     let gameRunning = false;
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let score;
     let distance;
     let highScore;
-    let keys = { ArrowLeft: false, ArrowRight: false };
+    // The `keys` object is no longer needed for this movement style.
     
     let player;
     let obstacles = [];
@@ -64,31 +64,23 @@ document.addEventListener('DOMContentLoaded', () => {
             this.char = char;
             this.width = 40;
             this.height = 40;
-            this.dx = 0;
+            this.dx = 0; // Direction is now persistent
         }
 
         draw() {
             ctx.font = '40px Arial';
-    
-            // *** MODIFIED FOR MIRRORING ***
-            // Check direction for mirroring
             if (this.dx > 0) { // Moving right
-                ctx.save(); // Save the current canvas state
-                ctx.scale(-1, 1); // Flip the context horizontally
-    
-                // Draw the character at a mirrored position
+                ctx.save();
+                ctx.scale(-1, 1);
                 ctx.fillText(this.char, -this.x - this.width, this.y);
-    
-                ctx.restore(); // Restore the canvas to its original, un-flipped state
+                ctx.restore();
             } else { // Moving left or stationary
-                // Draw normally
                 ctx.fillText(this.char, this.x, this.y);
             }
         }
 
         update() {
             this.x += this.dx;
-            // Keep player within canvas bounds
             if (this.x < 0) this.x = 0;
             if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
         }
@@ -125,12 +117,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         update() {
-            // Chase the player
-            const targetX = player.x - 10; // Center alignment
+            const targetX = player.x - 10;
             if (this.x < targetX) this.x += Math.min(2, targetX - this.x);
             if (this.x > targetX) this.x -= Math.min(2, this.x - targetX);
-            
-            // Move down slightly faster than the game world
             this.y -= (gameSpeedY * YETI_SPEED_MULTIPLIER);
         }
     }
@@ -138,17 +127,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Game Loop ---
     function gameLoop() {
         if (!gameRunning) return;
-
         update();
         draw();
         requestAnimationFrame(gameLoop);
     }
 
     function update() {
-        // Update player movement
-        player.dx = 0;
-        if (keys.ArrowLeft) player.dx = -PLAYER_SPEED_X;
-        if (keys.ArrowRight) player.dx = PLAYER_SPEED_X;
+        // *** MODIFICATION ***
+        // Player direction is now handled by event listeners, not in the main loop.
+        // We just need to call the player's update method.
         player.update();
 
         // Update obstacles
@@ -161,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         spawnObstacles();
 
         // Update score and distance
-        distance += gameSpeedY / 20; // Scale down for readability
+        distance += gameSpeedY / 20;
         score += gameSpeedY / 10;
         gameSpeedY += GAME_SPEED_INCREMENT;
 
@@ -172,21 +159,13 @@ document.addEventListener('DOMContentLoaded', () => {
             obstacles.push(yeti);
         }
 
-        // Collision Detection
         checkCollisions();
     }
 
     function draw() {
-        // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Draw player
         player.draw();
-
-        // Draw obstacles
         obstacles.forEach(o => o.draw());
-
-        // Update HUD
         scoreDisplay.textContent = `Score: ${Math.floor(score)}`;
         distanceDisplay.textContent = `Distance: ${Math.floor(distance)}m`;
         highScoreDisplay.textContent = `High Score: ${highScore}`;
@@ -194,7 +173,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Game Logic Functions ---
     function startGame() {
-        // Reset state
         gameRunning = true;
         gameSpeedY = GAME_INITIAL_SPEED_Y;
         score = 0;
@@ -205,8 +183,8 @@ document.addEventListener('DOMContentLoaded', () => {
         highScore = loadHighScore();
         
         player = new Player(canvas.width / 2 - 20, 50, currentSkierChar);
+        player.dx = 0; // Ensure player starts by going straight down.
         
-        // UI changes
         startMenu.style.display = 'none';
         gameOverMenu.style.display = 'none';
         hud.style.display = 'flex';
@@ -217,29 +195,23 @@ document.addEventListener('DOMContentLoaded', () => {
     function gameOver() {
         gameRunning = false;
         updateHighScore();
-
         finalScoreEl.textContent = Math.floor(score);
         finalHighScoreEl.textContent = highScore;
-        
         hud.style.display = 'none';
         gameOverMenu.style.display = 'block';
     }
 
     function spawnObstacles() {
-        // Limit number of obstacles to prevent lag
         if (obstacles.length > 30) return;
-
-        if (Math.random() < 0.05) { // Adjust spawn rate
+        if (Math.random() < 0.05) {
             const x = Math.random() * (canvas.width - 40);
             const y = canvas.height + 50;
-            
             const rand = Math.random();
             let type;
             if (rand < 0.5) type = OBSTACLE_TYPES.TREE;
             else if (rand < 0.75) type = OBSTACLE_TYPES.ROCK;
             else if (rand < 0.9) type = OBSTACLE_TYPES.MOGUL;
             else type = OBSTACLE_TYPES.GATE;
-
             obstacles.push(new Obstacle(x, y, type));
         }
     }
@@ -247,12 +219,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function checkCollisions() {
         for (let i = obstacles.length - 1; i >= 0; i--) {
             const obs = obstacles[i];
-            // Simple AABB collision detection
             if (player.x < obs.x + obs.width &&
                 player.x + player.width > obs.x &&
                 player.y < obs.y + obs.height &&
                 player.y + player.height > obs.y) {
-                
                 handleCollision(obs, i);
             }
         }
@@ -267,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'jump':
             case 'gate':
                 score += obstacle.points;
-                obstacles.splice(index, 1); // Remove mogul/gate after hitting it
+                obstacles.splice(index, 1);
                 break;
         }
     }
@@ -287,10 +257,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function saveToLeaderboard(newScore) {
         let board = JSON.parse(localStorage.getItem('skiFreeLeaderboard') || '[]');
-        if (newScore > 0) { // Only save scores greater than 0
+        if (newScore > 0) {
             board.push(newScore);
-            board.sort((a, b) => b - a); // Sort descending
-            board = board.slice(0, 10); // Keep top 10
+            board.sort((a, b) => b - a);
+            board = board.slice(0, 10);
             localStorage.setItem('skiFreeLeaderboard', JSON.stringify(board));
         }
     }
@@ -322,7 +292,6 @@ document.addEventListener('DOMContentLoaded', () => {
             option.addEventListener('click', () => {
                 currentSkierChar = char;
                 localStorage.setItem('skierChar', char);
-                // Update selection visual
                 document.querySelectorAll('.skier-option').forEach(opt => opt.classList.remove('selected'));
                 option.classList.add('selected');
             });
@@ -331,17 +300,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Event Listeners ---
+    
+    // *** MODIFICATION ***
+    // We now directly set the player's direction on keydown.
     window.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-            keys[e.key] = true;
+        if (!gameRunning || !player) return; // Only control when game is active
+
+        switch (e.key) {
+            case 'ArrowLeft':
+                player.dx = -PLAYER_SPEED_X;
+                break;
+            case 'ArrowRight':
+                player.dx = PLAYER_SPEED_X;
+                break;
+            case 'ArrowDown': // New control to go straight
+                player.dx = 0;
+                break;
         }
     });
 
-    window.addEventListener('keyup', (e) => {
-        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-            keys[e.key] = false;
-        }
-    });
+    // The keyup listener is no longer needed for movement.
+    // window.addEventListener('keyup', ...);
 
     startButton.addEventListener('click', startGame);
     retryButton.addEventListener('click', startGame);
