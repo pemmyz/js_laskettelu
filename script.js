@@ -36,11 +36,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const YETI_CHAR = '👹';
 
-    const PLAYER_SPEED_X = 4; // Adjusted for diagonal feel
-    const GAME_INITIAL_SPEED_Y = 4; // Adjusted for diagonal feel
+    const PLAYER_SPEED_X = 4;
+    const GAME_INITIAL_SPEED_Y = 4;
     const GAME_SPEED_INCREMENT = 0.0005;
     const YETI_TRIGGER_DISTANCE = 2000;
     const YETI_SPEED_MULTIPLIER = 1.05;
+
+    // *** NEW: Jump configuration ***
+    const PLAYER_FONT_SIZE = 40;
+    const PLAYER_JUMP_FONT_SIZE = 47; // 40 + 7
+    const JUMP_DURATION = 60; // 60 frames = approx. 1 second at 60fps
 
     // --- Game State ---
     let gameRunning = false;
@@ -48,7 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let score;
     let distance;
     let highScore;
-    // The `keys` object is no longer needed for this movement style.
     
     let player;
     let obstacles = [];
@@ -64,11 +68,33 @@ document.addEventListener('DOMContentLoaded', () => {
             this.char = char;
             this.width = 40;
             this.height = 40;
-            this.dx = 0; // Direction is now persistent
+            this.dx = 0;
+            // *** NEW: Jump state properties ***
+            this.isJumping = false;
+            this.jumpTimer = 0;
+        }
+
+        // *** NEW: Method to start a jump ***
+        startJump() {
+            if (!this.isJumping) {
+                this.isJumping = true;
+                this.jumpTimer = JUMP_DURATION;
+            }
         }
 
         draw() {
-            ctx.font = '40px Arial';
+            // *** MODIFIED: Apply jump effects before drawing ***
+            if (this.isJumping) {
+                ctx.font = `${PLAYER_JUMP_FONT_SIZE}px Arial`;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetX = 5;
+                ctx.shadowOffsetY = 5;
+            } else {
+                ctx.font = `${PLAYER_FONT_SIZE}px Arial`;
+            }
+
+            // Mirroring logic
             if (this.dx > 0) { // Moving right
                 ctx.save();
                 ctx.scale(-1, 1);
@@ -77,16 +103,30 @@ document.addEventListener('DOMContentLoaded', () => {
             } else { // Moving left or stationary
                 ctx.fillText(this.char, this.x, this.y);
             }
+
+            // *** NEW: Reset shadow effects so they don't affect other objects ***
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
         }
 
         update() {
             this.x += this.dx;
             if (this.x < 0) this.x = 0;
             if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
+
+            // *** NEW: Update the jump timer ***
+            if (this.isJumping) {
+                this.jumpTimer--;
+                if (this.jumpTimer <= 0) {
+                    this.isJumping = false;
+                }
+            }
         }
     }
 
-    // --- Obstacle Class ---
+    // --- Obstacle Class --- (No changes here)
     class Obstacle {
         constructor(x, y, typeInfo) {
             this.x = x;
@@ -97,25 +137,21 @@ document.addEventListener('DOMContentLoaded', () => {
             this.width = 40;
             this.height = 40;
         }
-
         draw() {
             ctx.font = '40px Arial';
             ctx.fillText(this.char, this.x, this.y);
         }
-
         update() {
             this.y -= gameSpeedY;
         }
     }
 
-    // --- Yeti Class ---
+    // --- Yeti Class --- (No changes here)
     class Yeti extends Obstacle {
         constructor(x, y) {
             super(x, y, { char: YETI_CHAR, type: 'yeti' });
-            this.width = 60;
-            this.height = 60;
+            this.width = 60; this.height = 60;
         }
-
         update() {
             const targetX = player.x - 10;
             if (this.x < targetX) this.x += Math.min(2, targetX - this.x);
@@ -124,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Game Loop ---
+    // --- Game Loop and Update --- (No changes here)
     function gameLoop() {
         if (!gameRunning) return;
         update();
@@ -133,35 +169,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function update() {
-        // *** MODIFICATION ***
-        // Player direction is now handled by event listeners, not in the main loop.
-        // We just need to call the player's update method.
         player.update();
-
-        // Update obstacles
         obstacles.forEach(o => o.update());
-        
-        // Remove off-screen obstacles
         obstacles = obstacles.filter(o => o.y + o.height > 0);
-
-        // Spawn new obstacles
         spawnObstacles();
-
-        // Update score and distance
         distance += gameSpeedY / 20;
         score += gameSpeedY / 10;
         gameSpeedY += GAME_SPEED_INCREMENT;
-
-        // Check for Yeti
         if (distance > YETI_TRIGGER_DISTANCE && !yetiActive) {
             yetiActive = true;
             yeti = new Yeti(Math.random() * (canvas.width - 60), canvas.height + 100);
             obstacles.push(yeti);
         }
-
         checkCollisions();
     }
 
+    // --- Drawing and Game State --- (No changes here)
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         player.draw();
@@ -171,24 +194,17 @@ document.addEventListener('DOMContentLoaded', () => {
         highScoreDisplay.textContent = `High Score: ${highScore}`;
     }
 
-    // --- Game Logic Functions ---
     function startGame() {
         gameRunning = true;
         gameSpeedY = GAME_INITIAL_SPEED_Y;
-        score = 0;
-        distance = 0;
-        obstacles = [];
-        yetiActive = false;
-        yeti = null;
+        score = 0; distance = 0;
+        obstacles = []; yetiActive = false; yeti = null;
         highScore = loadHighScore();
-        
         player = new Player(canvas.width / 2 - 20, 50, currentSkierChar);
-        player.dx = 0; // Ensure player starts by going straight down.
-        
+        player.dx = 0;
         startMenu.style.display = 'none';
         gameOverMenu.style.display = 'none';
         hud.style.display = 'flex';
-        
         gameLoop();
     }
     
@@ -228,21 +244,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // *** MODIFIED: Collision handler is updated for jumping ***
     function handleCollision(obstacle, index) {
+        // If jumping, the player is immune to crashes.
+        if (player.isJumping && obstacle.type === 'crash') {
+            return; // Fly over the obstacle!
+        }
+
         switch (obstacle.type) {
-            case 'crash':
+            case 'crash': // Tree or Rock
             case 'yeti':
                 gameOver();
                 break;
-            case 'jump':
+            case 'jump': // Mogul
+                player.startJump();
+                score += obstacle.points;
+                // DO NOT remove the mogul: The line `obstacles.splice(index, 1);` is intentionally omitted.
+                break;
             case 'gate':
                 score += obstacle.points;
-                obstacles.splice(index, 1);
+                obstacles.splice(index, 1); // Gates still disappear.
                 break;
         }
     }
 
-    // --- High Score & Leaderboard ---
+    // --- High Score, Customization, Event Listeners --- (No changes below this line)
     function loadHighScore() {
         return parseInt(localStorage.getItem('skiFreeHighScore') || '0');
     }
@@ -279,7 +305,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Customization ---
     function setupCustomization() {
         skierOptionsContainer.innerHTML = '';
         SKIER_OPTIONS.forEach(char => {
@@ -299,28 +324,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Event Listeners ---
-    
-    // *** MODIFICATION ***
-    // We now directly set the player's direction on keydown.
     window.addEventListener('keydown', (e) => {
-        if (!gameRunning || !player) return; // Only control when game is active
-
+        if (!gameRunning || !player) return;
         switch (e.key) {
-            case 'ArrowLeft':
-                player.dx = -PLAYER_SPEED_X;
-                break;
-            case 'ArrowRight':
-                player.dx = PLAYER_SPEED_X;
-                break;
-            case 'ArrowDown': // New control to go straight
-                player.dx = 0;
-                break;
+            case 'ArrowLeft': player.dx = -PLAYER_SPEED_X; break;
+            case 'ArrowRight': player.dx = PLAYER_SPEED_X; break;
+            case 'ArrowDown': player.dx = 0; break;
         }
     });
-
-    // The keyup listener is no longer needed for movement.
-    // window.addEventListener('keyup', ...);
 
     startButton.addEventListener('click', startGame);
     retryButton.addEventListener('click', startGame);
@@ -329,7 +340,6 @@ document.addEventListener('DOMContentLoaded', () => {
         startMenu.style.display = 'flex';
     });
 
-    // Modal listeners
     customizeButton.addEventListener('click', () => {
         setupCustomization();
         customizeModal.style.display = 'flex';
@@ -349,6 +359,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // --- Initial Setup ---
     highScore = loadHighScore();
 });
