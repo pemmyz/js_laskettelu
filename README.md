@@ -6,6 +6,10 @@ A retro-style downhill skiing game built with **HTML5 Canvas** and **JavaScript*
 Dodge trees and rocks, jump moguls for points, pass gates for extra score — and try to escape the **Yeti**!  
 Features multiple **Autobot AI modes**, a customization menu, and a local leaderboard.
 
+
+## Play it now: https://pemmyz.github.io/js_laskettelu/
+
+
 ![Game Screenshot](screenshot.png) <!-- Replace with your actual screenshot -->
 
 ---
