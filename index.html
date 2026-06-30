@@ -2,21 +2,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>JS-Laskettelu (SkiFree Clone)</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
 
+    <!-- Fullscreen Toggle Button -->
+    <button id="mobile-btn">📱 Fullscreen / Mobile Controls</button>
+
     <div id="game-container">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
 
-        <!-- UI Overlays -->
+        <!-- In-Game UI -->
+        <div id="hud" style="display: none;">
+            <div id="left-hud">
+                <div id="score-display">Score: 0</div>
+                <div id="distance-display">Distance: 0m</div>
+            </div>
+            <div id="mode-indicator"></div>
+            <div id="right-hud">
+                <div id="high-score-display">High Score: 0</div>
+            </div>
+        </div>
+
+        <!-- Mobile Touch Controls Overlay (Now INSIDE the container to scale and layer correctly) -->
+        <div id="mobile-controls">
+            <div id="mobile-dpad">
+                <button id="mobile-left" class="mobile-control-btn">◀</button>
+                <button id="mobile-right" class="mobile-control-btn">▶</button>
+            </div>
+            <div id="mobile-action">
+                <button id="mobile-down" class="mobile-control-btn">▼</button>
+            </div>
+        </div>
+
+        <!-- UI Overlays (Menus) -->
         <div id="start-menu" class="overlay">
             <h1>JS-Laskettelu</h1>
             <p>◀/▶: Steer | ▼: Straight | B: Autobot | D: Dev Mode</p>
-            <!-- This is the new line -->
             <p>While Autobot is active: 1-4 to change AI.</p>
             <p>Dodge trees and rocks. Hit moguls for points!</p>
             <button id="start-button">Start Game</button>
@@ -37,18 +62,6 @@
             </div>
         </div>
         
-        <!-- In-Game UI -->
-        <div id="hud" style="display: none;">
-            <div id="left-hud">
-                <div id="score-display">Score: 0</div>
-                <div id="distance-display">Distance: 0m</div>
-            </div>
-            <div id="mode-indicator"></div>
-            <div id="right-hud">
-                <div id="high-score-display">High Score: 0</div>
-            </div>
-        </div>
-
         <!-- Modals -->
         <div id="leaderboard-modal" class="modal" style="display: none;">
             <div class="modal-content">
@@ -67,7 +80,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 
     <script src="script.js"></script>
